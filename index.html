@@ -181,6 +181,11 @@ void main()
     float Rs = dot(2.0*N*dot(N,L) - L, V); // reflection coefficient of specular light, this is actually the dot product of V and and the direction of reflected light
     float k = 8.0; // specular exponent
     
+    // vec4 specularColor = vec4(2.0*pow(Rs,k));
+    // vec4 diffuseColor = vec4(0.0, 0.0, 1.0, 1.0)*dot(N,L);
+    // vec4 ambientColor = vec4(0.0, 0.0, 0.3, 1.0);
+
+    // 这里可以改颜色
     vec4 specularColor = vec4(2.0*pow(Rs,k));
     vec4 diffuseColor = vec4(0.0, 0.0, 1.0, 1.0)*dot(N,L);
     vec4 ambientColor = vec4(0.0, 0.0, 0.3, 1.0);
@@ -189,7 +194,9 @@ void main()
         
     gl_FragColor = specularColor + diffuseColor + ambientColor;
     gl_FragColor = gl_FragColor*(1.0-bc.a) + bc*bc.a;
-    gl_FragColor.a = 1.0;
+
+    // TODO 这个值的含义需要搞清楚。
+    gl_FragColor.a = 0.2;    // 0.2 ~ 0.35 是不错的值。值再大，就变蓝变灰。值再小，水波就不明显。
 }
 
 float RGBAToFloat(vec4 rgba)
@@ -202,7 +209,7 @@ float RGBAToFloat(vec4 rgba)
 <script type="text/javascript" src="waves.js"></script>
 </head>
 <body>
-<canvas id="gl-canvas">
+<canvas id="gl-canvas" >
     Oops ... your browser doesn't support HTML5's Canvas elements!
 </canvas>
 <div id="message"></div>

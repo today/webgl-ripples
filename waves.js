@@ -190,6 +190,7 @@ function init()
     // This is the resolution of the canvas (which will be scaled to the extent, using some rather primitive anti-aliasing techniques)
     canvas.width = viewPort.width;
     canvas.height = viewPort.height;    
+
     aspectRatio = viewPort.width/viewPort.height;
     
     canvas.addEventListener('mousedown', handleMouseDown, false);
@@ -200,13 +201,19 @@ function init()
     if (!gl) {
         messageBox.innerHTML = "WebGL is not available!";
     } else {
-        messageBox.innerHTML = "WebGL up and running!";
+        // messageBox.innerHTML = "WebGL up and running!";
+        messageBox.innerHTML = "SeeekLab";
     }
     
     messageBox.style.visibility = "visible";
     
-    gl.clearColor(0.121569, 0.87451, 0.121569, 0.875); // RGBA-packed form of the float 0.125
+    // 使用其他参数，就会从底部出现一个直线波。有意思
+    //gl.clearColor(0.121569, 0.87451, 0.121569, 0.875); // RGBA-packed form of the float 0.125
     
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+
+
+
     // Load shaders and get uniform locations
     splashProgram.program = InitShaders(gl, "splash-vertex-shader", "splash-fragment-shader");
     splashProgram.uBCTexture = gl.getUniformLocation(splashProgram.program, "uBCTexture");
@@ -311,7 +318,9 @@ function init()
         lastTime = Date.now();
         render();
     };
-    bcImage.src = "bcTexture.png";
+    // bcImage.src = "bcTexture.png";
+    // bcImage.src = "blank.png";
+    bcImage.src = "blank.png";
     
     InitTextureFramebuffers();
 }
@@ -397,11 +406,13 @@ function render()
     {
         lastTime = currentTime - (dTime % interval);
         
-        if(Math.random() < randomSplashP)
-        {
-            previousTexture = (previousTexture + 2) % 3;
-            addSplash(previousTexture, 1, Math.random(), 1.0 + (Math.random() - 1.0)/aspectRatio);
-        }
+        // 注释掉以下 5 行，就没有随机涟漪了。
+        // if(Math.random() < randomSplashP)
+        // {
+        //     previousTexture = (previousTexture + 2) % 3;
+        //     addSplash(previousTexture, 1, Math.random(), 1.0 + (Math.random() - 1.0)/aspectRatio);
+        // }
+
         if(splashRequested)
         {
             previousTexture = (previousTexture + 2) % 3;
