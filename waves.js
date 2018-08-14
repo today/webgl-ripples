@@ -27,19 +27,38 @@ var previousTexture; // Points to the texture from two frames ago, so that we on
 // We need these to fix the framerate
 var fps = 60;
 var interval = 1000/fps;
+//var interval = 120/fps;
+
 var lastTime;
 
-// Simulation parameters
-var dT = 1/fps; // Time step, in seconds
-var c = 40;     // Wave propagation speed, in texels per second
-var damping = 0.98;
+// Simulation parameters   这里是一些和波形有关的参数
+// 原始参数
+// var dT = 1/fps; // Time step, in seconds
+// var c = 40;     // Wave propagation speed, in texels per second
+// var damping = 0.98;
+// // Splash parameters
+// var width = 15;
+// var r = 8;
 
+// 调整后的参数
+var dT = 1/fps; // Time step, in seconds
+var c = 40;     // Wave propagation speed, in texels per second   42就是最大值的极限了。
+var damping = 0.98;   // 这个值越小，水波消失的越快。
 // Splash parameters
-var width = 15;
-var r = 8;
+var width = 30;  // 初始水波的外圆大小
+var r = 16;   // 初始水波的波高   这个参数和上面的那个有相关性，一般 1:2 比较自然。
+
+
 
 var randomSplashP = 1/30; // Probability for a random splash to be created per frame
 var splashRequested;
+
+// 用于从摄像头取图像然后生成涟漪的代码 的 变量
+video_x = 0;
+video_y = 0;
+video_prev_x = 0;
+video_prev_y = 0;
+
 
 window.onload = init;
 
@@ -395,6 +414,9 @@ function drawScreen()
     gl.disable(gl.BLEND);
 }
 
+
+lastRunTime = Date.now();
+
 function render()
 {
     window.requestAnimFrame(render, canvas);
@@ -416,10 +438,17 @@ function render()
         if(splashRequested)
         {
             previousTexture = (previousTexture + 2) % 3;
+            console.log("IN");
+            
+            // splashRequested.x = 0.3278566094100075;
+            // splashRequested.y = 0.8364451082897685;
+            
             addSplash(previousTexture, 1, splashRequested.x, splashRequested.y);
+            console.log(splashRequested);
             splashRequested = null;
+
         }
-        
+
         gl.bindFramebuffer(gl.FRAMEBUFFER, rttFramebuffers[(previousTexture + 2) % 3]);
         drawNewTexture();
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -429,3 +458,46 @@ function render()
         previousTexture = (previousTexture + 1) % 3;
     }
 }
+
+
+function getData(){
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'http://127.0.0.1:8000/steps/',true);
+    
+    xhr.send(null);
+    xhr.onreadystatechange = function(){
+        var DONE = 4; // readyState 4 代表已向服务器发送请求
+        var OK = 200; // status 200 代表服务器返回成功
+        if(xhr.readyState === DONE){
+            if(xhr.status === OK){
+                var obj = JSON.parse(xhr.responseText);
+                //console.log(obj.count);
+                if(obj.count > 0 ){
+                    video_x = obj.datas[0].x;
+                    video_y = obj.datas[0].y;
+                    
+                    //if( video_prev_x !== video_x || video_prev_y !== video_y ){
+                        video_prev_x = video_x;
+                        video_prev_y = video_y;
+
+                        splashRequested = {
+                            x: parseFloat(video_x),    // Normalized to give texture coordinates
+                            y: parseFloat(video_y) // Normalized and inverted to give texture coordinates
+                        };                        
+                    //}
+                    
+                }   
+            } else{
+                console.log("Error: "+ xhr.status); // 在此次请求中发生的错误
+            }
+        }
+    }
+}
+
+
+setInterval(
+    function(){ 
+        getData();
+    }
+    , 2000);
+
