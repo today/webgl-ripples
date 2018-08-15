@@ -99,6 +99,8 @@ function InitTextureFramebuffers()
     {
         rttFramebuffers[i] = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, rttFramebuffers[i]);
+
+        // 这里  ### 不是 ### 修改画面宽度和高度的地方！
         rttFramebuffers[i].width = resolution;  // these is not actually a property used by WebGL, but we'll store it here for later convenience
         rttFramebuffers[i].height = resolution; // ...
         
@@ -185,7 +187,8 @@ function handleMouseDown(event) {
     var rect = canvas.getBoundingClientRect();
     splashRequested = {
       x: (event.clientX - rect.left) / rect.width,    // Normalized to give texture coordinates
-      y: 1 - (event.clientY - rect.top) / rect.width // Normalized and inverted to give texture coordinates
+      //y: 1 - (event.clientY - rect.top) / rect.width // Normalized and inverted to give texture coordinates
+      y: 1 - (event.clientY - rect.top) / rect.height // 修改成使用高度数据。因为画面不是正方形了。
     };
 }
 
@@ -443,8 +446,10 @@ function render()
             // splashRequested.x = 0.3278566094100075;
             // splashRequested.y = 0.8364451082897685;
             
-            addSplash(previousTexture, 1, splashRequested.x, splashRequested.y);
+            //addSplash(previousTexture, 1, splashRequested.x, splashRequested.y);
+            addSplash(previousTexture, 1, splashRequested.x, 1.0 + (splashRequested.y-1)/aspectRatio);  // Y 坐标的变换很重要，否则就会定位错误。
             console.log(splashRequested);
+            console.log("" + (1.0 + (splashRequested.y-1)/aspectRatio));
             splashRequested = null;
 
         }
